@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #toolbar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100px;
+    border: 1px solid #ccc;
+    background-color: #f2f2f2;
+    padding: 10px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+  }
+  
+  #toolbar button {
+    margin-bottom: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  #toolbar button:hover {
+    background-color: #45a049;
+  }
+  
+  #toolbar button:active {
+    background-color: #3d8b42;
+  }
+  
+  .scene {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #f0f0f0;
+  }
+  
+  .node {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-color: #f9a61a;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+  
+  .node.selected {
+    border: 2px solid #007bff;
+  }
+    
+  .grid-lines {
+    position:fixed;
+    top: -10000000px;
+    left: -10000000px;
+    width: 30000000px;
+    height: 30000000px;
+    background-image: linear-gradient(#e6e6e6 1px, transparent 1px), linear-gradient(90deg, #e6e6e6 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  #inspector {
+    width: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    border-radius: 5px;
+  }
+  
+  .property {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .property label {
+    width: 60px;
+    font-weight: bold;
+  }
+  
+  .property input[type="text"] {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 14px;
+  }
+  
+  #object-list {
+    width: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f2f2f2;
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #object-list li {
+    margin-bottom: 5px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f9a61a;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+  #object-list li:hover {
+    background-color: #e78e16;
+  }
+  
+  #object-list li.selected {
+    background-color: #007bff;
+  }
+  
