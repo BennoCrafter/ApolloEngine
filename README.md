@@ -1,2 +1,2 @@
-# StellaEngine
+# ApolloEngine
 A very cool GameEngine 😎
