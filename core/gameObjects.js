@@ -1,3 +1,4 @@
+
 export class GameObject {
     constructor(information) {
       this.data = information;

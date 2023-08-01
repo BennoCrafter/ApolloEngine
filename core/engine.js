@@ -1,3 +1,4 @@
+import { getObjectDataList } from "../ui/Scene/scripts";
 export class GameEngine {
     constructor() {
       this.current_key = null;
@@ -9,7 +10,10 @@ export class GameEngine {
       this.context = this.canvas.getContext("2d");
   
       // Game objects and settings
-      this.objects = [];
+      //without ui
+      // this.objects = [];
+      // with ui
+      this.objects = getObjectDataList();
       this.interval = null;
     }
   
@@ -17,7 +21,7 @@ export class GameEngine {
       this.canvas.width = width;
       this.canvas.height = height;
       document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-  
+      this.centerCanvas()
       // Listeners to track user inputs
       window.addEventListener("keydown", (e) => {
         this.current_key = e.key;
@@ -39,6 +43,14 @@ export class GameEngine {
       window.addEventListener("mousemove", (evt) => {
         this.mouse_x = evt.pageX;
         this.mouse_y = evt.pageY;
+      });
+
+      this.canvas.addEventListener("mousemove", (evt) => {
+        const canvasPosition = this.getCanvasPosition();
+        this.mouse_pos = [
+          evt.pageX - canvasPosition.left,
+          evt.pageY - canvasPosition.top
+        ];
       });
     }
   
@@ -76,7 +88,12 @@ export class GameEngine {
         }
       }
     }
-  
+    
+    getCanvasPosition() {
+      const canvasRect = this.canvas.getBoundingClientRect();
+      return { left: canvasRect.left, top: canvasRect.top };
+    }
+
     draw() {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
@@ -129,13 +146,26 @@ export class GameEngine {
     }
   
     getMousePos() {
-      return [this.mouse_x, this.mouse_y];
+      return this.mouse_pos;
     }
   
     getRandomInt(max) {
       return Math.floor(Math.random() * max);
     }
+    centerCanvas() {
+      // Calculate the centered position of the canvas
+      const canvasWidth = this.canvas.width;
+      const canvasHeight = this.canvas.height;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
   
+      const centerX = (windowWidth - canvasWidth) / 2;
+      const centerY = (windowHeight - canvasHeight) / 2;
+  
+      // Set the canvas position to be in the center of the viewport
+      this.canvas.style.left = `${centerX}px`;
+      this.canvas.style.top = `${centerY}px`;
+    }
     collided(obj1, obj2) {
       // Check if the objects' rectangular boundaries intersect
       if (

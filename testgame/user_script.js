@@ -3,7 +3,7 @@ import { Components } from "/core/components.js";
 import { GameObject } from "/core/GameObjects.js";
 
 // Create a new game engine
-const gameEngine = new GameEngine(480, 270);
+const gameEngine = new GameEngine();
 const components = new Components();
 gameEngine.init(700, 500);
 // Initialize and start the game engine

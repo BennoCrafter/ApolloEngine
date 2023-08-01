@@ -1,3 +1,5 @@
+// JavaScript
+
 const scene = document.getElementById('scene');
 const inspector = document.getElementById('inspector');
 const objectList = document.getElementById('object-list');
@@ -10,15 +12,31 @@ let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
 
-function createNode() {
-  scene.addEventListener('click', onSceneClickOnce);
+const openButton = document.getElementById("openButton");
+const closeButton = document.getElementById("closeButton");
+const popupMenu = document.getElementById("popupMenu");
+
+document.addEventListener("DOMContentLoaded", function () {
+  openButton.addEventListener("click", function () {
+    popupMenu.style.display = "block";
+  });
+
+  closeButton.addEventListener("click", function () {
+    popupMenu.style.display = "none";
+  });
+});
+
+function createNode(dataType) {
+  popupMenu.style.display = "none";
+  scene.addEventListener("click", onSceneClickOnce)
 
   function onSceneClickOnce(event) {
     scene.removeEventListener('click', onSceneClickOnce);
-    
+
     const newNode = document.createElement('div');
     newNode.classList.add('node');
     newNode.textContent = 'Node';
+    newNode.setAttribute("data-type", dataType);
     newNode.style.left = `${event.clientX - scene.getBoundingClientRect().left}px`;
     newNode.style.top = `${event.clientY - scene.getBoundingClientRect().top}px`;
 
@@ -44,6 +62,8 @@ function onNodeMouseDown(event) {
   function onMouseUp() {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+    updateInspector();
+    updateObjectList(); // Update object list when the node is moved
   }
 
   document.addEventListener('mousemove', onMouseMove);
@@ -77,6 +97,10 @@ scene.addEventListener('mousedown', (event) => {
 document.addEventListener('mouseup', () => {
   endPan();
 });
+
+function runProject() {
+  window.open("../../testgameui/index.html", "_blank");
+}
 
 function startPan(event) {
   isPanning = true;
@@ -141,7 +165,8 @@ function updateInspector() {
       <input type="text" value="${parseInt(selectedNode.style.left)}">
     `;
     positionX.querySelector('input').addEventListener('change', (event) => {
-      selectedNode.style.left = `${event.target.value}`;
+      selectedNode.style.left = `${event.target.value}px`;
+      updateObjectList(); // Update object list when X position changes
     });
     inspector.appendChild(positionX);
 
@@ -152,7 +177,8 @@ function updateInspector() {
       <input type="text" value="${parseInt(selectedNode.style.top)}">
     `;
     positionY.querySelector('input').addEventListener('change', (event) => {
-      selectedNode.style.top = `${event.target.value}`;
+      selectedNode.style.top = `${event.target.value}px`;
+      updateObjectList(); // Update object list when Y position changes
     });
     inspector.appendChild(positionY);
 
@@ -176,6 +202,7 @@ function updateInspector() {
     `;
     width.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.width = `${event.target.value}px`;
+      updateObjectList(); // Update object list when width changes
     });
     inspector.appendChild(width);
 
@@ -187,6 +214,7 @@ function updateInspector() {
     `;
     height.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.height = `${event.target.value}px`;
+      updateObjectList(); // Update object list when height changes
     });
     inspector.appendChild(height);
   }
@@ -196,21 +224,28 @@ function updateObjectList() {
   objectList.innerHTML = ''; // Clear previous content
 
   const nodes = document.querySelectorAll('.node');
+  const objectDataList = [];
+
   nodes.forEach((node, index) => {
+    const objectData = {
+      type: "rectangle",
+      width: parseInt(node.style.width) || 100,
+      height: parseInt(node.style.height) || 100,
+      x: parseInt(node.style.left),
+      y: parseInt(node.style.top),
+      color: node.style.backgroundColor || 'transparent',
+      name: node.dataset.name || `Object ${index + 1}`
+    };
+
+    objectDataList.push(objectData);
+
     const listItem = document.createElement('li');
-    listItem.textContent = node.dataset.name || `Object ${index + 1}`;
+    listItem.textContent = objectData.name;
 
     listItem.addEventListener('click', () => {
       selectedNode = node;
       updateInspector();
-      // Highlight the selected node in the object list
-      nodes.forEach(node => {
-        if (node === selectedNode) {
-          node.classList.add('selected');
-        } else {
-          node.classList.remove('selected');
-        }
-      });
+      updateObjectList();
     });
 
     // Add 'selected' class to highlight the selected node in the object list
@@ -220,6 +255,12 @@ function updateObjectList() {
 
     objectList.appendChild(listItem);
   });
+
+  console.log(objectDataList);
+}
+
+function getObjectDataList() {
+  return objectDataList;
 }
 
 scene.addEventListener('wheel', (event) => {
