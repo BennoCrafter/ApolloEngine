@@ -84,13 +84,26 @@ export class GameEngine {
       let collisionEnabled_comps = [];
       for (let i = 0; i < this.objects.length; i++) {
         let comps = this.objects[i].data.components;
-        comps.forEach(function (comp, index) {
+        comps.forEach(function (comp) {
           if (comp.type === "collider") {
             if (comp.obj.collisionEnabled) {
-              collisionEnabled_comps.push(comp); 
+              collisionEnabled_comps.push([comp, i]); 
             }
           }
         });
+      }
+      // compare all collisions
+      for (let i = 0; i < collisionEnabled_comps.length; i++) {
+        const comp1 = collisionEnabled_comps[i][0].obj;
+        for (let j = i + 1; j < collisionEnabled_comps.length; j++) {
+          const comp2 = collisionEnabled_comps[j][0].obj;
+          if (this.collided(comp1, comp2)) {
+              let obj1 = this.objects[collisionEnabled_comps[i][1]]
+              let obj2 = this.objects[collisionEnabled_comps[j][1]]
+              console.log(obj1)
+              // add that all objcet will add to collides
+          }
+        }
       }
   
     }

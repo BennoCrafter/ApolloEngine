@@ -11,9 +11,9 @@ export class GameObject {
   
     draw() {}
   
-    move(vel) {
-      this.data.position.x += vel.x
-      this.data.position.y += vel.y
+    move() {
+      this.data.position.x += this.data.velocity.x
+      this.data.position.y -= this.data.velocity.y
     }
   
     rotate(degrees) {
@@ -48,7 +48,8 @@ export class GameObject {
         }
     }
     
-    init() {      
+    init() {  
+      this.data.velocity = {x:10, y:0}    
       if (this.data.components == undefined) {
         this.data.components = [];
       }

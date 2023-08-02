@@ -1,7 +1,7 @@
 import { GameEngine } from "/core/engine.js";
 import { Components } from "/core/components.js";
 import { GameObject } from "/core/GameObjects.js";
-import Velocity from '/core/velocity.js';
+import {Velocity} from '/core/velocity.js';
 // Create a new game engine
 const gameEngine = new GameEngine();
 const components = new Components();
@@ -97,18 +97,32 @@ var own_sprite = new GameObject({
   img_src: "",
   components: [],
 });
-player.velocity = new Velocity()
 
+player.data.velocity = new Velocity()
 gameEngine.addObject([player, coin, enemy, score, own_sprite, test]);
 
   gameEngine.update = function(){
     coin.rotate(1)
-    player.velocity.default()
+
+    player.data.velocity.default()
     if (gameEngine.pressedKey("w")) {
-        player.velocity.y = -1;
+        player.data.velocity.y = speed;
     }
-    player.move(player.velocity);
-    console.log(player.velocity)
+    if (gameEngine.pressedKey("s")) {
+      player.data.velocity.y = -speed;
+    }
+    if (gameEngine.pressedKey("d")) {
+      player.data.velocity.x = speed;
+    }
+    if (gameEngine.pressedKey("a")) {
+      player.data.velocity.x = -speed;
+    }
+    player.move();
+    if (player.data.velocity.x != 0){
+      console.log(player.data.velocity)
+      console.log(player.data)
+    }
+
     // Retrieve the correct collider objects
     const playerCollider = player.getComponent("player_collider");
     const playerColliderBig = player.getComponent("player_collider_big");
@@ -117,8 +131,8 @@ gameEngine.addObject([player, coin, enemy, score, own_sprite, test]);
     if (gameEngine.collided(playerCollider, coinCollider)) {
       score_count += 1;
       score.data.text = "Score: " + score_count;
-      coin.data.x = gameEngine.getRandomInt(gameEngine.canvas.width);
-      coin.data.y = gameEngine.getRandomInt(gameEngine.canvas.height);
+      coin.data.position.x = gameEngine.getRandomInt(gameEngine.canvas.width);
+      coin.data.position.y = gameEngine.getRandomInt(gameEngine.canvas.height);
     }
     if (gameEngine.collided(playerColliderBig, enemyCollider)) {
     // console.log("dead")
