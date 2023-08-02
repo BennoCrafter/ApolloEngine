@@ -1,14 +1,14 @@
-// JavaScript
-
 const scene = document.getElementById('scene');
 const inspector = document.getElementById('inspector');
 const objectList = document.getElementById('object-list');
 let selectedNode = null;
 
 let nodeIndex = 0;
+let lastClicked = "null"
 let scaleFactor = 1;
 let panX = 0;
 let panY = 0;
+let isSwitching = false;
 let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -32,7 +32,7 @@ function createNode(dataType) {
   scene.addEventListener("click", onSceneClickOnce)
 
   function onSceneClickOnce(event) {
-    nodeIndex += 1;
+    nodeIndex++;
     scene.removeEventListener('click', onSceneClickOnce);
 
     const newNode = document.createElement('div');
@@ -144,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
   scene.appendChild(gridLines);
 });
 
-// Scene Manager
 function hideAllScenes() {
   const scenes = document.getElementsByClassName("node");
   for (let i = 0; i < scenes.length; i++) {
@@ -173,7 +172,6 @@ function goToScene(sceneId) {
       showScene(sceneId);
   }
 }
-
 
 function updateInspector() {
   inspector.innerHTML = ''; // Clear previous content
@@ -268,14 +266,19 @@ function updateObjectList() {
       x: parseInt(node.style.left),
       y: parseInt(node.style.top),
       color: node.style.backgroundColor || 'transparent',
-      name: node.dataset.name || node.id
+      name: node.dataset.name || node.id,
+
     };
 
     objectDataList.push(objectData);
 
     const listItem = document.createElement('li');
     listItem.textContent = objectData.name;
+    listItem.classList = "listItem";
+    listItem.id = node.id;
     listItem.setAttribute("list-type", node.getAttribute("data-type"));
+
+    if (listItem.id == "world-node") {listItem.id = "world-node-li";}
 
     listItem.addEventListener('click', () => {
       selectedNode = node;
@@ -284,13 +287,30 @@ function updateObjectList() {
     });
     if (listItem.getAttribute("list-type") != "World-Node") {
       listItem.addEventListener('dblclick', function () {
+        const listItems = document.querySelectorAll(".listItem");
+        listItems.forEach((item) => {
+          if (item.id != node.id) {
+            item.style.display = "none";
+          }
+        });
+
         goToScene(node.id);
+        node.setAttribute("lastX", node.style.left);
+        node.setAttribute("lastY", node.style.top);
+        lastClicked = node.id;
+        node.style.left = "40%";
+        node.style.top = "40%";
+        document.getElementById("world-node-li").style.display = "block";
         updateWorldNode();
       });
     }
     else {
       listItem.addEventListener("dblclick", function () {
-        showAllScenes();
+        const lastElement = document.getElementById(lastClicked);
+        lastElement.style.left = lastElement.getAttribute("lastX");
+        lastElement.style.top = lastElement.getAttribute("lastY");
+
+        showAllScenes(); 
         updateWorldNode();
       });
     }
@@ -301,6 +321,11 @@ function updateObjectList() {
     }
 
     objectList.appendChild(listItem);
+  });
+
+  updateWorldNode();
+
+  console.log(objectDataList);
 }
 
 function updateWorldNode() {
@@ -323,6 +348,10 @@ scene.addEventListener('wheel', (event) => {
   panY *= scaleFactorChange;
   scene.style.transform = `scale(${scaleFactor}) translate(${panX}px, ${panY}px)`;
 });
+
+// Initial update of the object list and inspector
+updateObjectList();
+updateInspector();
 
 // Initial update of the object list and inspector
 updateObjectList();
