@@ -5,6 +5,7 @@ const inspector = document.getElementById('inspector');
 const objectList = document.getElementById('object-list');
 let selectedNode = null;
 
+let nodeIndex = 0;
 let scaleFactor = 1;
 let panX = 0;
 let panY = 0;
@@ -31,11 +32,13 @@ function createNode(dataType) {
   scene.addEventListener("click", onSceneClickOnce)
 
   function onSceneClickOnce(event) {
+    nodeIndex += 1;
     scene.removeEventListener('click', onSceneClickOnce);
 
     const newNode = document.createElement('div');
     newNode.classList.add('node');
     newNode.textContent = 'Node';
+    newNode.id = dataType + nodeIndex;
     newNode.setAttribute("data-type", dataType);
     newNode.style.left = `${event.clientX - scene.getBoundingClientRect().left}px`;
     newNode.style.top = `${event.clientY - scene.getBoundingClientRect().top}px`;
@@ -141,6 +144,37 @@ document.addEventListener('DOMContentLoaded', () => {
   scene.appendChild(gridLines);
 });
 
+// Scene Manager
+function hideAllScenes() {
+  const scenes = document.getElementsByClassName("node");
+  for (let i = 0; i < scenes.length; i++) {
+      scenes[i].style.display = "none";
+  }
+}
+
+function showAllScenes() {
+  const scenes = document.getElementsByClassName("node");
+  for (let i = 0; i < scenes.length; i++) {
+      scenes[i].style.display = "block";
+  }
+}
+
+function showScene(sceneId) {
+  hideAllScenes();
+  const sceneNode = document.getElementById(sceneId);
+  if (sceneNode) {
+      sceneNode.style.display = "block";
+  }
+}
+
+function goToScene(sceneId) {
+  const sceneNode = document.getElementById(sceneId);
+  if (sceneNode) {
+      showScene(sceneId);
+  }
+}
+
+
 function updateInspector() {
   inspector.innerHTML = ''; // Clear previous content
 
@@ -226,7 +260,7 @@ function updateObjectList() {
   const nodes = document.querySelectorAll('.node');
   const objectDataList = [];
 
-  nodes.forEach((node, index) => {
+  nodes.forEach((node) => {
     const objectData = {
       type: "rectangle",
       width: parseInt(node.style.width) || 100,
@@ -234,19 +268,32 @@ function updateObjectList() {
       x: parseInt(node.style.left),
       y: parseInt(node.style.top),
       color: node.style.backgroundColor || 'transparent',
-      name: node.dataset.name || `Object ${index + 1}`
+      name: node.dataset.name || node.id
     };
 
     objectDataList.push(objectData);
 
     const listItem = document.createElement('li');
     listItem.textContent = objectData.name;
+    listItem.setAttribute("list-type", node.getAttribute("data-type"));
 
     listItem.addEventListener('click', () => {
       selectedNode = node;
       updateInspector();
       updateObjectList();
     });
+    if (listItem.getAttribute("list-type") != "World-Node") {
+      listItem.addEventListener('dblclick', function () {
+        goToScene(node.id);
+        updateWorldNode();
+      });
+    }
+    else {
+      listItem.addEventListener("dblclick", function () {
+        showAllScenes();
+        updateWorldNode();
+      });
+    }
 
     // Add 'selected' class to highlight the selected node in the object list
     if (node === selectedNode) {
@@ -254,9 +301,10 @@ function updateObjectList() {
     }
 
     objectList.appendChild(listItem);
-  });
+}
 
-  console.log(objectDataList);
+function updateWorldNode() {
+  document.getElementById("world-node").style.display = "none";
 }
 
 function getObjectDataList() {
