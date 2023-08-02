@@ -4,11 +4,13 @@ const objectList = document.getElementById('object-list');
 let selectedNode = null;
 
 let nodeIndex = 0;
-let lastClicked = "null"
+let lastClicked = "world-node"
+let swiched = false;
 let scaleFactor = 1;
+let lastX = 0;
+let lastY = 0;
 let panX = 0;
 let panY = 0;
-let isSwitching = false;
 let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -66,13 +68,13 @@ function onNodeMouseDown(event) {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     updateInspector();
-    updateObjectList(); // Update object list when the node is moved
+    updateSelectedObjectList(); // Update object list when the node is moved
   }
 
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
   selectedNode = node;
-  updateInspector();
+  updateSelectedObjectList();
 }
 
 scene.addEventListener('mousedown', (event) => {
@@ -134,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!event.target.classList.contains('node')) {
       selectedNode = null;
-      updateInspector();
+      updateSelectedObjectList();
     }
   });
 
@@ -186,7 +188,7 @@ function updateInspector() {
     `;
     name.querySelector('input').addEventListener('change', (event) => {
       selectedNode.dataset.name = event.target.value;
-      updateObjectList();
+      updateSelectedObjectList().updateSelectedObjectList();
     });
     inspector.appendChild(name);
     // Position properties
@@ -198,7 +200,7 @@ function updateInspector() {
     `;
     positionX.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.left = `${event.target.value}px`;
-      updateObjectList(); // Update object list when X position changes
+      updateSelectedObjectList(); // Update object list when X position changes
     });
     inspector.appendChild(positionX);
 
@@ -210,7 +212,7 @@ function updateInspector() {
     `;
     positionY.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.top = `${event.target.value}px`;
-      updateObjectList(); // Update object list when Y position changes
+      updateSelectedObjectList(); // Update object list when Y position changes
     });
     inspector.appendChild(positionY);
 
@@ -234,7 +236,7 @@ function updateInspector() {
     `;
     width.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.width = `${event.target.value}px`;
-      updateObjectList(); // Update object list when width changes
+      updateSelectedObjectList(); // Update object list when width changes
     });
     inspector.appendChild(width);
 
@@ -246,7 +248,7 @@ function updateInspector() {
     `;
     height.querySelector('input').addEventListener('change', (event) => {
       selectedNode.style.height = `${event.target.value}px`;
-      updateObjectList(); // Update object list when height changes
+      updateSelectedObjectList(); // Update object list when height changes
     });
     inspector.appendChild(height);
   }
@@ -279,14 +281,19 @@ function updateObjectList() {
     listItem.setAttribute("list-type", node.getAttribute("data-type"));
 
     if (listItem.id == "world-node") {listItem.id = "world-node-li";}
-
+  
     listItem.addEventListener('click', () => {
       selectedNode = node;
       updateInspector();
-      updateObjectList();
+      updateSelectedObjectList();
     });
+
     if (listItem.getAttribute("list-type") != "World-Node") {
       listItem.addEventListener('dblclick', function () {
+        if (swiched) {
+          listItem.removeEventListener("dblclick");
+        }
+
         const listItems = document.querySelectorAll(".listItem");
         listItems.forEach((item) => {
           if (item.id != node.id) {
@@ -295,30 +302,31 @@ function updateObjectList() {
         });
 
         goToScene(node.id);
+        lastClicked = node;
         node.setAttribute("lastX", node.style.left);
         node.setAttribute("lastY", node.style.top);
-        lastClicked = node.id;
         node.style.left = "40%";
         node.style.top = "40%";
         document.getElementById("world-node-li").style.display = "block";
         updateWorldNode();
+        swiched = true;
+        console.log(lastX + "," + lastY);
       });
     }
     else {
       listItem.addEventListener("dblclick", function () {
-        const lastElement = document.getElementById(lastClicked);
+        const lastElement = document.getElementById(lastClicked.id);
         lastElement.style.left = lastElement.getAttribute("lastX");
         lastElement.style.top = lastElement.getAttribute("lastY");
 
+        swiched = false;
+        updateObjectList();
         showAllScenes(); 
         updateWorldNode();
       });
     }
 
-    // Add 'selected' class to highlight the selected node in the object list
-    if (node === selectedNode) {
-      listItem.classList.add('selected');
-    }
+    updateSelectedObjectList();
 
     objectList.appendChild(listItem);
   });
@@ -326,6 +334,17 @@ function updateObjectList() {
   updateWorldNode();
 
   console.log(objectDataList);
+}
+
+function updateSelectedObjectList() {
+  const listItems = document.querySelectorAll(".listItem");
+  listItems.forEach((item) => {
+    if (item.id === selectedNode.id) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
 }
 
 function updateWorldNode() {
@@ -348,10 +367,6 @@ scene.addEventListener('wheel', (event) => {
   panY *= scaleFactorChange;
   scene.style.transform = `scale(${scaleFactor}) translate(${panX}px, ${panY}px)`;
 });
-
-// Initial update of the object list and inspector
-updateObjectList();
-updateInspector();
 
 // Initial update of the object list and inspector
 updateObjectList();
