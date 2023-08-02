@@ -1,4 +1,3 @@
-import { getObjectDataList } from "../ui/Scene/scripts";
 export class GameEngine {
     constructor() {
       this.current_key = null;
@@ -11,9 +10,8 @@ export class GameEngine {
   
       // Game objects and settings
       //without ui
-      // this.objects = [];
+      this.objects = [];
       // with ui
-      this.objects = getObjectDataList();
       this.interval = null;
     }
   
@@ -62,7 +60,7 @@ export class GameEngine {
       }
   
       this.interval = setInterval(() => {
-        this.sprite_update();
+        this.sprite_update(); 
         this.draw();
         this.update();
         this.game_update();
@@ -74,13 +72,29 @@ export class GameEngine {
     }
     
     game_update() {
-      
+      this.check_all_collisions()  
     }
 
     update() {
       // User-defined function for updating the game state
     }
   
+    check_all_collisions() {
+      // get all comps with collisionEnabled
+      let collisionEnabled_comps = [];
+      for (let i = 0; i < this.objects.length; i++) {
+        let comps = this.objects[i].data.components;
+        comps.forEach(function (comp, index) {
+          if (comp.type === "collider") {
+            if (comp.obj.collisionEnabled) {
+              collisionEnabled_comps.push(comp); 
+            }
+          }
+        });
+      }
+  
+    }
+
     sprite_update() {
       for (let i = 0; i < this.objects.length; i++) {
         if (this.objects[i].sprite_update) {
@@ -102,7 +116,7 @@ export class GameEngine {
     
         this.context.save(); // Save the current context state
     
-        this.context.translate(obj.x + obj.width / 2, obj.y + obj.height / 2); // Translate to the center of the object
+        this.context.translate(obj.position.x + obj.width / 2, obj.position.y + obj.height / 2); // Translate to the center of the object
         this.context.rotate(obj.rotation * (Math.PI / 180)); // Rotate the context
     
         if (obj.type === "text") {
@@ -169,10 +183,10 @@ export class GameEngine {
     collided(obj1, obj2) {
       // Check if the objects' rectangular boundaries intersect
       if (
-        obj1.x < obj2.x + obj2.width &&
-        obj1.x + obj1.width > obj2.x &&
-        obj1.y < obj2.y + obj2.height &&
-        obj1.y + obj1.height > obj2.y
+        obj1.position.x < obj2.position.x + obj2.width &&
+        obj1.position.x + obj1.width > obj2.position.x &&
+        obj1.position.y < obj2.position.y + obj2.height &&
+        obj1.position.y + obj1.height > obj2.position.y
       ) {
         // Collision detected
         return true;

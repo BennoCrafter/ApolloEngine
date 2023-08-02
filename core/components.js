@@ -4,8 +4,7 @@ export function Components(){
 
     this.rectColliderGenereal = function(obj){
         var obj = {
-            x: obj.x,
-            y: obj.y,
+            position: {x:obj.x, y:obj.y},
             width: obj.width,
             height: obj.height
         }
@@ -16,8 +15,7 @@ export function Components(){
         var obj = {
             width: info.width,
             height: info.height,
-            x: info.x,
-            y: info.y,
+            position: {x: info.x, y: info.y},
             collisionEnabled: info.collisionEnabled,
             collides: []
         }    
