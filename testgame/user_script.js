@@ -1,7 +1,6 @@
 import { GameEngine } from "/core/engine.js";
 import { Components } from "/core/components.js";
 import { GameObject } from "/core/GameObjects.js";
-import {Velocity} from '/core/velocity.js';
 // Create a new game engine
 const gameEngine = new GameEngine();
 const components = new Components();
@@ -98,30 +97,33 @@ var own_sprite = new GameObject({
   components: [],
 });
 
-player.data.velocity = new Velocity()
+
 gameEngine.addObject([player, coin, enemy, score, own_sprite, test]);
 
   gameEngine.update = function(){
     coin.rotate(1)
 
-    player.data.velocity.default()
+    
     if (gameEngine.pressedKey("w")) {
-        player.data.velocity.y = speed;
+      player.data.velocity.y = speed
     }
-    if (gameEngine.pressedKey("s")) {
-      player.data.velocity.y = -speed;
+    else if (gameEngine.pressedKey("s")) {
+      player.data.velocity.y = -speed
+
     }
-    if (gameEngine.pressedKey("d")) {
-      player.data.velocity.x = speed;
+    else if (gameEngine.pressedKey("d")) {
+      player.data.velocity.x = speed
+
     }
-    if (gameEngine.pressedKey("a")) {
-      player.data.velocity.x = -speed;
+    else if (gameEngine.pressedKey("a")) {
+      player.data.velocity.x = -speed
+      ;
+    }
+    else{
+      player.set_velocity_default()
+
     }
     player.move();
-    if (player.data.velocity.x != 0){
-      console.log(player.data.velocity)
-      console.log(player.data)
-    }
 
     // Retrieve the correct collider objects
     const playerCollider = player.getComponent("player_collider");

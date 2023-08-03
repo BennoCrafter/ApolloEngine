@@ -72,11 +72,23 @@ export class GameEngine {
     }
     
     game_update() {
+      this.update_game_objects()
       this.check_all_collisions()  
     }
 
     update() {
       // User-defined function for updating the game state
+    }
+
+    update_game_objects() {
+      for (let i = 0; i < this.objects.length; i++) {
+        const obj = this.objects[i];  
+          const updatedObj = obj.update_data();
+          if (updatedObj) {
+            this.objects[i] = updatedObj;
+            
+        }
+      }
     }
   
     check_all_collisions() {
@@ -97,14 +109,42 @@ export class GameEngine {
         const comp1 = collisionEnabled_comps[i][0].obj;
         for (let j = i + 1; j < collisionEnabled_comps.length; j++) {
           const comp2 = collisionEnabled_comps[j][0].obj;
+          let obj1 = this.objects[collisionEnabled_comps[i][1]];
+          let obj2 = this.objects[collisionEnabled_comps[j][1]];
           if (this.collided(comp1, comp2)) {
-              let obj1 = this.objects[collisionEnabled_comps[i][1]]
-              let obj2 = this.objects[collisionEnabled_comps[j][1]]
-              console.log(obj1)
-              // add that all objcet will add to collides
+            obj1.data.velocity.x = 0
+            obj1.data.velocity.y = 0
+            const comp1Index = obj1.data.components.findIndex((component) => component.obj === comp1);
+            if (comp1Index !== -1) {
+              const obj2Index = obj1.data.components[comp1Index].obj.collides.findIndex((obj) => obj === obj2);
+              if (obj2Index === -1) {
+                obj1.data.components[comp1Index].obj.collides.push(obj2);
+              }
+            }
+      
+            const comp2Index = obj2.data.components.findIndex((component) => component.obj === comp2);
+            if (comp2Index !== -1) {
+              const obj1Index = obj2.data.components[comp2Index].obj.collides.findIndex((obj) => obj === obj1);
+              if (obj1Index === -1) {
+                obj2.data.components[comp2Index].obj.collides.push(obj1);
+              }
+            }
+          } else {
+            const comp1Index = obj1.data.components.findIndex((component) => component.obj === comp1);
+            const obj2Index = obj1.data.components[comp1Index].obj.collides.findIndex((obj) => obj === obj2);
+            if (obj2Index !== -1) {
+              obj1.data.components[comp1Index].obj.collides.splice(obj2Index, 1);
+            }
+      
+            const comp2Index = obj2.data.components.findIndex((component) => component.obj === comp2);
+            const obj1Index = obj2.data.components[comp2Index].obj.collides.findIndex((obj) => obj === obj1);
+            if (obj1Index !== -1) {
+              obj2.data.components[comp2Index].obj.collides.splice(obj1Index, 1);
+            }
           }
         }
       }
+      
   
     }
 
