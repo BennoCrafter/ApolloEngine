@@ -5,7 +5,7 @@ let selectedNode = null;
 
 let nodeIndex = 0;
 let lastClicked = "world-node"
-let swiched = false;
+let switched = false;
 let scaleFactor = 1;
 let lastX = 0;
 let lastY = 0;
@@ -156,7 +156,7 @@ function hideAllScenes() {
 function showAllScenes() {
   const scenes = document.getElementsByClassName("node");
   for (let i = 0; i < scenes.length; i++) {
-      scenes[i].style.display = "block";
+      scenes[i].style.display = "flex";
   }
 }
 
@@ -164,7 +164,7 @@ function showScene(sceneId) {
   hideAllScenes();
   const sceneNode = document.getElementById(sceneId);
   if (sceneNode) {
-      sceneNode.style.display = "block";
+      sceneNode.style.display = "flex";
   }
 }
 
@@ -268,8 +268,7 @@ function updateObjectList() {
       x: parseInt(node.style.left),
       y: parseInt(node.style.top),
       color: node.style.backgroundColor || 'transparent',
-      name: node.dataset.name || node.id,
-
+      name: node.id || node.dataset.name
     };
 
     objectDataList.push(objectData);
@@ -280,8 +279,8 @@ function updateObjectList() {
     listItem.id = node.id;
     listItem.setAttribute("list-type", node.getAttribute("data-type"));
 
-    if (listItem.id == "world-node") {listItem.id = "world-node-li";}
-  
+    if (listItem.id == "World-Node") {listItem.classList.add("world-node");}
+
     listItem.addEventListener('click', () => {
       selectedNode = node;
       updateInspector();
@@ -290,7 +289,7 @@ function updateObjectList() {
 
     if (listItem.getAttribute("list-type") != "World-Node") {
       listItem.addEventListener('dblclick', function () {
-        if (swiched) {
+        if (switched) {
           listItem.removeEventListener("dblclick");
         }
 
@@ -302,27 +301,32 @@ function updateObjectList() {
         });
 
         goToScene(node.id);
-        lastClicked = node;
+        lastClicked = node.id;
         node.setAttribute("lastX", node.style.left);
         node.setAttribute("lastY", node.style.top);
-        node.style.left = "40%";
-        node.style.top = "40%";
-        document.getElementById("world-node-li").style.display = "block";
+        node.style.left = "650px";
+        node.style.top = "300px";
+        scene.style.transform = `scale(${scaleFactor}) translate(0px, 0px)`;
+        document.querySelector(".world-node").style.display = "block";
         updateWorldNode();
-        swiched = true;
-        console.log(lastX + "," + lastY);
+        switched = true;
+
+        console.log(lastClicked);
       });
     }
     else {
       listItem.addEventListener("dblclick", function () {
-        const lastElement = document.getElementById(lastClicked.id);
+        const lastElement = document.getElementById(lastClicked);
         lastElement.style.left = lastElement.getAttribute("lastX");
         lastElement.style.top = lastElement.getAttribute("lastY");
 
-        swiched = false;
+        lastClicked = node.id;
+        switched = false;
         updateObjectList();
         showAllScenes(); 
         updateWorldNode();
+
+        console.log(lastClicked);
       });
     }
 
@@ -348,7 +352,7 @@ function updateSelectedObjectList() {
 }
 
 function updateWorldNode() {
-  document.getElementById("world-node").style.display = "none";
+  document.getElementById("World-Node").style.display = "none";
 }
 
 function getObjectDataList() {
