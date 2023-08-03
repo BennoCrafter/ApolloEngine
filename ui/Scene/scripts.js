@@ -30,21 +30,27 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function createNode(dataType) {
+  nodeIndex++;
+
+  const newNode = document.createElement('div');
+  newNode.classList.add('node');
+  newNode.id = dataType + nodeIndex;
+  newNode.setAttribute("data-type", dataType);
+  
+  return newNode;
+}
+
+function createChildWorldNode(dataType) {
   popupMenu.style.display = "none";
-  scene.addEventListener("click", onSceneClickOnce)
+  scene.addEventListener("click", onSceneClickOnce);
 
   function onSceneClickOnce(event) {
-    nodeIndex++;
     scene.removeEventListener('click', onSceneClickOnce);
 
-    const newNode = document.createElement('div');
-    newNode.classList.add('node');
-    newNode.textContent = 'Node';
-    newNode.id = dataType + nodeIndex;
-    newNode.setAttribute("data-type", dataType);
+    const newNode = createNode(dataType)
     newNode.style.left = `${event.clientX - scene.getBoundingClientRect().left}px`;
     newNode.style.top = `${event.clientY - scene.getBoundingClientRect().top}px`;
-
+    newNode.textContent = 'Node';
     newNode.addEventListener('mousedown', onNodeMouseDown);
 
     scene.appendChild(newNode);
@@ -54,14 +60,60 @@ function createNode(dataType) {
   }
 }
 
+function createChildNode(dataType) {
+  popupMenu.style.display = "none";
+  scene.addEventListener("click", onSceneClickOnce);
+
+  function onSceneClickOnce(event) {
+    const lastElement = document.getElementById(lastClicked);
+    scene.removeEventListener('click', onSceneClickOnce);
+
+    const newNode = createNode(dataType)
+    const scaleFactorInverse = 1 / scaleFactor;
+    const offsetX = panX + event.clientX - lastElement.getBoundingClientRect().left;
+    const offsetY = panY + event.clientY - lastElement.getBoundingClientRect().top;
+
+    newNode.style.left = `${offsetX * scaleFactorInverse}px`;
+    newNode.style.top = `${offsetY * scaleFactorInverse}px`;
+
+    newNode.addEventListener('mousedown', onNodeMouseDown);
+    newNode.setAttribute("child-type", lastElement.id)
+    newNode.textContent = 'Child';
+    newNode.classList.add("child");
+
+    lastElement.appendChild(newNode);
+    selectedNode = newNode;
+    updateInspector();
+    updateChildObjectList();
+  }
+}
+
 function onNodeMouseDown(event) {
   const node = event.target;
+  const lastElement = document.getElementById(lastClicked);
   let offsetX = event.clientX - node.getBoundingClientRect().left;
   let offsetY = event.clientY - node.getBoundingClientRect().top;
 
   function onMouseMove(event) {
-    node.style.left = `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
-    node.style.top = `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    if (!switched && node.classList.contains("child")) {
+      // do nothing
+    }
+    else if (!switched) {
+      node.style.left = panX + `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
+      node.style.top = panY + `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    }
+    else if (node.classList.contains("child")) {
+      const scaleFactorInverse = 1 / scaleFactor;
+      offsetX = panX + event.clientX - lastElement.getBoundingClientRect().left;
+      offsetY = panY + event.clientY - lastElement.getBoundingClientRect().top;
+
+      node.style.left = `${offsetX * scaleFactorInverse}px`;
+      node.style.top = `${offsetY * scaleFactorInverse}px`;
+    }
+    else {
+      node.style.left = `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
+      node.style.top = `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    }
   }
 
   function onMouseUp() {
@@ -338,6 +390,69 @@ function updateObjectList() {
   updateWorldNode();
 
   console.log(objectDataList);
+}
+
+function updateChildObjectList() {
+  objectList.innerHTML = ''; // Clear previous content
+
+  const nodes = document.querySelectorAll('.node');
+  const objectDataList = [];
+
+  nodes.forEach((node) => {
+    const objectData = {
+      type: "rectangle",
+      width: parseInt(node.style.width) || 100,
+      height: parseInt(node.style.height) || 100,
+      x: parseInt(node.style.left),
+      y: parseInt(node.style.top),
+      color: node.style.backgroundColor || 'transparent',
+      name: node.id || node.dataset.name
+    };
+
+    objectDataList.push(objectData);
+
+    const listItem = document.createElement('li');
+    listItem.textContent = objectData.name;
+    listItem.classList = "listItem";
+    listItem.id = node.id;
+    listItem.setAttribute("list-type", node.getAttribute("data-type"));
+
+    listItem.style.display = "none";
+
+    if (node.getAttribute("child-type") == lastClicked || node.id == lastClicked) {
+      listItem.style.display = "block";
+    }
+    if (listItem.id == "World-Node") { 
+      listItem.style.display = "block"; 
+      listItem.classList.add("world-node"); 
+    }
+
+    listItem.addEventListener('click', () => {
+      selectedNode = node;
+      updateInspector();
+      updateSelectedObjectList();
+    });
+
+    if (listItem.id == "World-Node") {
+      listItem.addEventListener("dblclick", function () {
+        const lastElement = document.getElementById(lastClicked);
+        lastElement.style.left = lastElement.getAttribute("lastX");
+        lastElement.style.top = lastElement.getAttribute("lastY");
+
+        lastClicked = node.id;
+        switched = false;
+        updateObjectList();
+        showAllScenes(); 
+        updateWorldNode();
+
+        console.log(lastClicked);
+      });
+    }
+
+    updateSelectedObjectList();
+
+    objectList.appendChild(listItem);
+  });
 }
 
 function updateSelectedObjectList() {
