@@ -13,7 +13,7 @@
     <button onclick="runProject()">Run</button>
   </div>
   <div id="scene">
-    <div class="node" id="world-node" data-type="World-Node"></div>
+    <div class="node" id="World-Node" data-type="World-Node"></div>
   </div>
   <div id="inspector"></div>
   <div id="object-list"></div>
@@ -21,8 +21,8 @@
   <div id="popupMenu" class="popup">
     <button id="closeButton">x</button>
     <ul>
-        <button onclick="createNode('Character-Body');">CharacterBody</button><br>
-        <button onclick="createNode('Random-Body');">RandomBody</button>
+        <button onclick="if(!switched){createNode('Character-Body');} else {createChildNode();}">CharacterBody</button><br>
+        <button onclick="if(!switched){createNode('Coliding-Body');} else {createChildNode();}">ColidingBody</button>
         <li>Menupunkt 3</li>
     </ul>
   </div>  

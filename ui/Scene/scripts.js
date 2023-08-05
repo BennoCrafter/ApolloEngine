@@ -5,7 +5,7 @@ let selectedNode = null;
 
 let nodeIndex = 0;
 let lastClicked = "world-node"
-let swiched = false;
+let switched = false;
 let scaleFactor = 1;
 let lastX = 0;
 let lastY = 0;
@@ -30,21 +30,27 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function createNode(dataType) {
+  nodeIndex++;
+
+  const newNode = document.createElement('div');
+  newNode.classList.add('node');
+  newNode.id = dataType + nodeIndex;
+  newNode.setAttribute("data-type", dataType);
+  
+  return newNode;
+}
+
+function createChildWorldNode(dataType) {
   popupMenu.style.display = "none";
-  scene.addEventListener("click", onSceneClickOnce)
+  scene.addEventListener("click", onSceneClickOnce);
 
   function onSceneClickOnce(event) {
-    nodeIndex++;
     scene.removeEventListener('click', onSceneClickOnce);
 
-    const newNode = document.createElement('div');
-    newNode.classList.add('node');
-    newNode.textContent = 'Node';
-    newNode.id = dataType + nodeIndex;
-    newNode.setAttribute("data-type", dataType);
+    const newNode = createNode(dataType)
     newNode.style.left = `${event.clientX - scene.getBoundingClientRect().left}px`;
     newNode.style.top = `${event.clientY - scene.getBoundingClientRect().top}px`;
-
+    newNode.textContent = 'Node';
     newNode.addEventListener('mousedown', onNodeMouseDown);
 
     scene.appendChild(newNode);
@@ -54,14 +60,60 @@ function createNode(dataType) {
   }
 }
 
+function createChildNode(dataType) {
+  popupMenu.style.display = "none";
+  scene.addEventListener("click", onSceneClickOnce);
+
+  function onSceneClickOnce(event) {
+    const lastElement = document.getElementById(lastClicked);
+    scene.removeEventListener('click', onSceneClickOnce);
+
+    const newNode = createNode(dataType)
+    const scaleFactorInverse = 1 / scaleFactor;
+    const offsetX = panX + event.clientX - lastElement.getBoundingClientRect().left;
+    const offsetY = panY + event.clientY - lastElement.getBoundingClientRect().top;
+
+    newNode.style.left = `${offsetX * scaleFactorInverse}px`;
+    newNode.style.top = `${offsetY * scaleFactorInverse}px`;
+
+    newNode.addEventListener('mousedown', onNodeMouseDown);
+    newNode.setAttribute("child-type", lastElement.id)
+    newNode.textContent = 'Child';
+    newNode.classList.add("child");
+
+    lastElement.appendChild(newNode);
+    selectedNode = newNode;
+    updateInspector();
+    updateChildObjectList();
+  }
+}
+
 function onNodeMouseDown(event) {
   const node = event.target;
+  const lastElement = document.getElementById(lastClicked);
   let offsetX = event.clientX - node.getBoundingClientRect().left;
   let offsetY = event.clientY - node.getBoundingClientRect().top;
 
   function onMouseMove(event) {
-    node.style.left = `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
-    node.style.top = `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    if (!switched && node.classList.contains("child")) {
+      // do nothing
+    }
+    else if (!switched) {
+      node.style.left = panX + `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
+      node.style.top = panY + `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    }
+    else if (node.classList.contains("child")) {
+      const scaleFactorInverse = 1 / scaleFactor;
+      offsetX = panX + event.clientX - lastElement.getBoundingClientRect().left;
+      offsetY = panY + event.clientY - lastElement.getBoundingClientRect().top;
+
+      node.style.left = `${offsetX * scaleFactorInverse}px`;
+      node.style.top = `${offsetY * scaleFactorInverse}px`;
+    }
+    else {
+      node.style.left = `${event.clientX - offsetX - scene.getBoundingClientRect().left}px`;
+      node.style.top = `${event.clientY - offsetY - scene.getBoundingClientRect().top}px`;
+    }
   }
 
   function onMouseUp() {
@@ -156,7 +208,7 @@ function hideAllScenes() {
 function showAllScenes() {
   const scenes = document.getElementsByClassName("node");
   for (let i = 0; i < scenes.length; i++) {
-      scenes[i].style.display = "block";
+      scenes[i].style.display = "flex";
   }
 }
 
@@ -164,7 +216,7 @@ function showScene(sceneId) {
   hideAllScenes();
   const sceneNode = document.getElementById(sceneId);
   if (sceneNode) {
-      sceneNode.style.display = "block";
+      sceneNode.style.display = "flex";
   }
 }
 
@@ -268,8 +320,7 @@ function updateObjectList() {
       x: parseInt(node.style.left),
       y: parseInt(node.style.top),
       color: node.style.backgroundColor || 'transparent',
-      name: node.dataset.name || node.id,
-
+      name: node.id || node.dataset.name
     };
 
     objectDataList.push(objectData);
@@ -280,8 +331,8 @@ function updateObjectList() {
     listItem.id = node.id;
     listItem.setAttribute("list-type", node.getAttribute("data-type"));
 
-    if (listItem.id == "world-node") {listItem.id = "world-node-li";}
-  
+    if (listItem.id == "World-Node") {listItem.classList.add("world-node");}
+
     listItem.addEventListener('click', () => {
       selectedNode = node;
       updateInspector();
@@ -290,7 +341,7 @@ function updateObjectList() {
 
     if (listItem.getAttribute("list-type") != "World-Node") {
       listItem.addEventListener('dblclick', function () {
-        if (swiched) {
+        if (switched) {
           listItem.removeEventListener("dblclick");
         }
 
@@ -302,27 +353,32 @@ function updateObjectList() {
         });
 
         goToScene(node.id);
-        lastClicked = node;
+        lastClicked = node.id;
         node.setAttribute("lastX", node.style.left);
         node.setAttribute("lastY", node.style.top);
-        node.style.left = "40%";
-        node.style.top = "40%";
-        document.getElementById("world-node-li").style.display = "block";
+        node.style.left = "650px";
+        node.style.top = "300px";
+        scene.style.transform = `scale(${scaleFactor}) translate(0px, 0px)`;
+        document.querySelector(".world-node").style.display = "block";
         updateWorldNode();
-        swiched = true;
-        console.log(lastX + "," + lastY);
+        switched = true;
+
+        console.log(lastClicked);
       });
     }
     else {
       listItem.addEventListener("dblclick", function () {
-        const lastElement = document.getElementById(lastClicked.id);
+        const lastElement = document.getElementById(lastClicked);
         lastElement.style.left = lastElement.getAttribute("lastX");
         lastElement.style.top = lastElement.getAttribute("lastY");
 
-        swiched = false;
+        lastClicked = node.id;
+        switched = false;
         updateObjectList();
         showAllScenes(); 
         updateWorldNode();
+
+        console.log(lastClicked);
       });
     }
 
@@ -334,6 +390,69 @@ function updateObjectList() {
   updateWorldNode();
 
   console.log(objectDataList);
+}
+
+function updateChildObjectList() {
+  objectList.innerHTML = ''; // Clear previous content
+
+  const nodes = document.querySelectorAll('.node');
+  const objectDataList = [];
+
+  nodes.forEach((node) => {
+    const objectData = {
+      type: "rectangle",
+      width: parseInt(node.style.width) || 100,
+      height: parseInt(node.style.height) || 100,
+      x: parseInt(node.style.left),
+      y: parseInt(node.style.top),
+      color: node.style.backgroundColor || 'transparent',
+      name: node.id || node.dataset.name
+    };
+
+    objectDataList.push(objectData);
+
+    const listItem = document.createElement('li');
+    listItem.textContent = objectData.name;
+    listItem.classList = "listItem";
+    listItem.id = node.id;
+    listItem.setAttribute("list-type", node.getAttribute("data-type"));
+
+    listItem.style.display = "none";
+
+    if (node.getAttribute("child-type") == lastClicked || node.id == lastClicked) {
+      listItem.style.display = "block";
+    }
+    if (listItem.id == "World-Node") { 
+      listItem.style.display = "block"; 
+      listItem.classList.add("world-node"); 
+    }
+
+    listItem.addEventListener('click', () => {
+      selectedNode = node;
+      updateInspector();
+      updateSelectedObjectList();
+    });
+
+    if (listItem.id == "World-Node") {
+      listItem.addEventListener("dblclick", function () {
+        const lastElement = document.getElementById(lastClicked);
+        lastElement.style.left = lastElement.getAttribute("lastX");
+        lastElement.style.top = lastElement.getAttribute("lastY");
+
+        lastClicked = node.id;
+        switched = false;
+        updateObjectList();
+        showAllScenes(); 
+        updateWorldNode();
+
+        console.log(lastClicked);
+      });
+    }
+
+    updateSelectedObjectList();
+
+    objectList.appendChild(listItem);
+  });
 }
 
 function updateSelectedObjectList() {
@@ -348,7 +467,7 @@ function updateSelectedObjectList() {
 }
 
 function updateWorldNode() {
-  document.getElementById("world-node").style.display = "none";
+  document.getElementById("World-Node").style.display = "none";
 }
 
 function getObjectDataList() {
