@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <script src="/core/engine.js" type="module"></script>
-    <script src="/core/velocity.js" type="module"></script>
-    <script src="/core/components.js" type="module"></script>
-    <script src="user_script.js" type="module"></script>
-  </body>
-</html>
+    <head>
+        <title>Demo Game: </title>
+
+        <!-- external library -->
+        <script type="text/javascript" src="../engine_src/lib/gl-matrix.js"></script>
+
+        <!-- our game -->
+        <script type="module" src="test.js"></script>
+    </head>
+    
+     <body>    
+        <!-- GLCanvas is the area we will draw in -->
+        <canvas id="GLCanvas" width="1280" height="720">
+           <!-- this message will show only if WebGL clearing failed -->
+            Your browser does not support the HTML5 canvas.
+        </canvas>
+    </body>
+</html> 
