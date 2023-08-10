@@ -1,6 +1,8 @@
 const scene = document.getElementById('scene');
+const scriptArea = document.getElementById('scriptArea')
 const inspector = document.getElementById('inspector');
 const objectList = document.getElementById('object-list');
+const toolbar = document.getElementById("createButton")
 let selectedNode = null;
 
 let nodeIndex = 0;
@@ -15,11 +17,33 @@ let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
 
+const scriptAreaButton = document.getElementById("Script-Area");
+const workspaceAreaButton = document.getElementById("Workspace-Area");
+
 const openButton = document.getElementById("openButton");
 const closeButton = document.getElementById("closeButton");
 const popupMenu = document.getElementById("popupMenu");
 
 document.addEventListener("DOMContentLoaded", function () {
+  scriptAreaButton.textContent = scriptAreaButton.id;
+  workspaceAreaButton.textContent = workspaceAreaButton.id;
+
+  scriptAreaButton.addEventListener("click", function () {
+    scene.style.display = "none";
+    toolbar.style.display = "none";
+    objectList.style.display = "none";
+    inspector.style.display = "none"
+    scriptArea.style.display = "flex";
+  });
+
+  workspaceAreaButton.addEventListener("click", function () {
+    scriptArea.style.display = "none"
+    scene.style.display = "flex";
+    toolbar.style.display = "block";
+    objectList.style.display = "block";
+    inspector.style.display = "block"
+  });
+
   openButton.addEventListener("click", function () {
     popupMenu.style.display = "block";
   });
@@ -119,7 +143,6 @@ function onNodeMouseDown(event) {
   function onMouseUp() {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
-    updateInspector();
     updateSelectedObjectList(); // Update object list when the node is moved
   }
 
@@ -198,6 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
   scene.appendChild(gridLines);
 });
 
+
+// functions for Scene Managment
 function hideAllScenes() {
   const scenes = document.getElementsByClassName("node");
   for (let i = 0; i < scenes.length; i++) {
@@ -213,20 +238,13 @@ function showAllScenes() {
 }
 
 function showScene(sceneId) {
-  hideAllScenes();
   const sceneNode = document.getElementById(sceneId);
   if (sceneNode) {
       sceneNode.style.display = "flex";
   }
 }
 
-function goToScene(sceneId) {
-  const sceneNode = document.getElementById(sceneId);
-  if (sceneNode) {
-      showScene(sceneId);
-  }
-}
-
+// Updating the Inspector, which is placed on the top-right
 function updateInspector() {
   inspector.innerHTML = ''; // Clear previous content
 
@@ -333,27 +351,40 @@ function updateObjectList() {
 
     if (listItem.id == "World-Node") {listItem.classList.add("world-node");}
 
+    if (node.classList.contains("child")) {
+      listItem.setAttribute("child-type", node.getAttribute("child-type"));
+      listItem.style.display = "none";
+    }
+
     listItem.addEventListener('click', () => {
       selectedNode = node;
-      updateInspector();
       updateSelectedObjectList();
     });
 
     if (listItem.getAttribute("list-type") != "World-Node") {
       listItem.addEventListener('dblclick', function () {
+        hideAllScenes();
+        lastClicked = node.id;
         if (switched) {
           listItem.removeEventListener("dblclick");
         }
 
         const listItems = document.querySelectorAll(".listItem");
         listItems.forEach((item) => {
-          if (item.id != node.id) {
+          if (item.getAttribute("child-type") == lastClicked || item.id == lastClicked) {
+            console.log("hi")
+            item.style.display = "block";
+          } else {
             item.style.display = "none";
-          }
+          } 
         });
 
-        goToScene(node.id);
-        lastClicked = node.id;
+        // display child Nodes of the object
+        for (child of node.children) {
+          child.style.display = "flex"; 
+        }
+
+        showScene(node.id);
         node.setAttribute("lastX", node.style.left);
         node.setAttribute("lastY", node.style.top);
         node.style.left = "650px";
@@ -390,6 +421,7 @@ function updateObjectList() {
   updateWorldNode();
 
   console.log(objectDataList);
+
 }
 
 function updateChildObjectList() {
@@ -429,7 +461,6 @@ function updateChildObjectList() {
 
     listItem.addEventListener('click', () => {
       selectedNode = node;
-      updateInspector();
       updateSelectedObjectList();
     });
 
@@ -464,6 +495,8 @@ function updateSelectedObjectList() {
       item.classList.remove('selected');
     }
   });
+
+  updateInspector();
 }
 
 function updateWorldNode() {
