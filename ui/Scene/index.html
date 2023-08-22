@@ -7,26 +7,36 @@
   <title>Scene Editor</title>
 </head>
 <body>
-
   <div id="toolbar">
-    <button id="openButton">Create Node</button>
-    <button onclick="runProject()">Run</button>
+    <div id="createButton">
+      <button id="openButton">Create Node</button>
+      <button onclick="runProject()">Run</button>
+    </div>
+
+    <div id="menus">
+      <div class="menuTab" id="Workspace-Area"></div>
+      <div class="menuTab" id="Script-Area"></div>
+    </div>
   </div>
+
   <div id="scene">
     <div class="node" id="World-Node" data-type="World-Node"></div>
   </div>
+  <div id="scriptArea"></div>
   <div id="inspector"></div>
-  <div id="object-list"></div>
+  <div id="object-list">
+    <li class="listElement" id="World-Node" list-type="World-Node">World-Node</li>
+  </div>
 
   <div id="popupMenu" class="popup">
     <button id="closeButton">x</button>
     <ul>
-        <button onclick="if(!switched){createNode('Character-Body');} else {createChildNode();}">CharacterBody</button><br>
-        <button onclick="if(!switched){createNode('Coliding-Body');} else {createChildNode();}">ColidingBody</button>
-        <li>Menupunkt 3</li>
+      <button onclick="createNode('Character-Body')">CharacterBody</button><br>
+      <button onclick="createNode('Coliding-Body');">ColidingBody</button>
+      <li>Menupunkt 3</li>
     </ul>
   </div>  
 
-  <script src="scripts.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
