@@ -8,11 +8,22 @@
 
         <!-- our game -->
         <script type="module" src="test.js"></script>
+
+        <style>
+            canvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 800px;
+        }
+        </style>
     </head>
     
      <body>    
         <!-- GLCanvas is the area we will draw in -->
-        <canvas id="GLCanvas" width="1280" height="720">
+        <canvas id="GLCanvas" width="800" height="600">
            <!-- this message will show only if WebGL clearing failed -->
             Your browser does not support the HTML5 canvas.
         </canvas>
